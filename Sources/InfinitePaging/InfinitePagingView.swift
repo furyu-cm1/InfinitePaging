@@ -14,6 +14,7 @@ public struct InfinitePagingView<T: Pageable, Content: View>: View {
     private let minimumDistance: CGFloat
     private let pageAlignment: PageAlignment
     private let pagingHandler: (PageDirection) -> Void
+    private let closingHandler: (() -> Void)?
     private let content: (T) -> Content
 
     public init(
@@ -21,6 +22,7 @@ public struct InfinitePagingView<T: Pageable, Content: View>: View {
         minimumDistance: CGFloat = 0,
         pageAlignment: PageAlignment,
         pagingHandler: @escaping (PageDirection) -> Void,
+        closingHandler: (() -> Void)? = nil,
         @ViewBuilder content: @escaping (T) -> Content
     ) {
         assert(objects.wrappedValue.count == 3, "objects count must be 3.")
@@ -28,6 +30,7 @@ public struct InfinitePagingView<T: Pageable, Content: View>: View {
         self.minimumDistance = minimumDistance
         self.pageAlignment = pageAlignment
         self.pagingHandler = pagingHandler
+        self.closingHandler = closingHandler
         self.content = content
     }
 
@@ -50,7 +53,8 @@ public struct InfinitePagingView<T: Pageable, Content: View>: View {
                     ),
                     minimumDistance: minimumDistance,
                     pageAlignment: pageAlignment,
-                    pagingHandler: pagingHandler
+                    pagingHandler: pagingHandler,
+                    closingHandler: closingHandler
                 )
             )
         }

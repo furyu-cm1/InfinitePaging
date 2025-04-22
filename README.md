@@ -31,6 +31,8 @@ import SwiftUI
 import InfinitePaging
 
 struct ContentView: View {
+    @Environment(\.dismiss) private var dismiss
+
     // Prepare three elements to display at first.
     @State var pages: [Page] = [
         Page(number: -1),
@@ -43,6 +45,7 @@ struct ContentView: View {
             objects: $pages,
             pageAlignment: .horizontal,
             pagingHandler: { paging($0) },
+            closingHandler: { dismiss() },
             content: { pageView($0) }
         )
     }

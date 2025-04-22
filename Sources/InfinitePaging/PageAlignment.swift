@@ -20,6 +20,15 @@ public enum PageAlignment: String, CaseIterable {
         }
     }
 
+    func dismissScalar(_ size: CGSize) -> CGFloat {
+        switch self {
+        case .horizontal:
+            size.height
+        case .vertical:
+            size.width
+        }
+    }
+
     func offset(_ value: CGFloat) -> CGSize {
         switch self {
         case .horizontal: 

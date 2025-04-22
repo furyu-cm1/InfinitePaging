@@ -11,10 +11,12 @@ struct InfinitePagingViewModifier<T: Pageable>: ViewModifier {
     @Binding var objects: [T]
     @Binding var pageSize: CGFloat
     @State var pagingOffset: CGFloat
+    @State var dismissDirectionOffset: CGFloat
     @State var draggingOffset: CGFloat
     private let minimumDistance: CGFloat
     private let pageAlignment: PageAlignment
     private let pagingHandler: (PageDirection) -> Void
+    private let closingHandler: (() -> Void)?
 
     var dragGesture: some Gesture {
         DragGesture(minimumDistance: minimumDistance)
@@ -27,6 +29,15 @@ struct InfinitePagingViewModifier<T: Pageable>: ViewModifier {
                 draggingOffset = 0
                 let predicatedOffset = pageAlignment.scalar(value.predictedEndTranslation)
                 let newIndex = Int(max(0, min(2, round(1 - predicatedOffset / pageSize))))
+                if #available(iOS 18.0, *) {
+                    // ページングの方向より、ページングと垂直の方向(=閉じる操作の方向)の方が大きければページを閉じる
+                    // 18.0以降で.sheetによりInfinitePagingViewを開いた場合にスワイプダウンによる動作が不安定になり、18.4以降でほぼ効かなくなっているためこの処理を追加
+                    dismissDirectionOffset += pageAlignment.dismissScalar(value.translation)
+                    if abs(predicatedOffset) < abs(dismissDirectionOffset), dismissDirectionOffset > 0 {
+                        closingHandler?()
+                        return
+                    }
+                }
                 withAnimation(.smooth(duration: 0.1)) {
                     pagingOffset = -pageSize * CGFloat(newIndex)
                 } completion: {
@@ -46,15 +57,18 @@ struct InfinitePagingViewModifier<T: Pageable>: ViewModifier {
         pageSize: Binding<CGFloat>,
         minimumDistance: CGFloat,
         pageAlignment: PageAlignment,
-        pagingHandler: @escaping (PageDirection) -> Void
+        pagingHandler: @escaping (PageDirection) -> Void,
+        closingHandler: (() -> Void)?
     ) {
         _objects = objects
         _pageSize = pageSize
         _pagingOffset = State(initialValue: -pageSize.wrappedValue)
         _draggingOffset = State(initialValue: 0)
+        _dismissDirectionOffset = State(initialValue: -pageSize.wrappedValue)
         self.minimumDistance = minimumDistance
         self.pageAlignment = pageAlignment
         self.pagingHandler = pagingHandler
+        self.closingHandler = closingHandler
     }
 
     func body(content: Content) -> some View {
