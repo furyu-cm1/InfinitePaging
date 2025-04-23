@@ -32,10 +32,12 @@ struct InfinitePagingViewModifier<T: Pageable>: ViewModifier {
                 if #available(iOS 18.0, *) {
                     // ページングの方向より、ページングと垂直の方向(=閉じる操作の方向)の方が大きければページを閉じる
                     // 18.0以降で.sheetによりInfinitePagingViewを開いた場合にスワイプダウンによる動作が不安定になり、18.4以降でほぼ効かなくなっているためこの処理を追加
-                    dismissDirectionOffset += pageAlignment.dismissScalar(value.translation)
-                    if abs(predicatedOffset) < abs(dismissDirectionOffset), dismissDirectionOffset > 0 {
-                        closingHandler?()
-                        return
+                    if let closingHandler = closingHandler {
+                        dismissDirectionOffset += pageAlignment.dismissScalar(value.translation)
+                        if abs(predicatedOffset) < abs(dismissDirectionOffset), dismissDirectionOffset > 0 {
+                            closingHandler()
+                            return
+                        }
                     }
                 }
                 withAnimation(.smooth(duration: 0.1)) {
