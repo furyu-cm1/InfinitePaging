@@ -16,6 +16,7 @@ let package = Package(
     targets: [
         .target(
             name: "InfinitePaging",
+            path: "Sources/InfinitePaging",
             swiftSettings: [.enableUpcomingFeature("ExistentialAny")]
         ),
     ]
